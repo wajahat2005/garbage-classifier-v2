@@ -8,8 +8,7 @@ from PIL import Image
 # =========================
 import requests
 
-MODEL_PATH = "https://huggingface.co/2005-wajahat/gaarbage-classifier-v2/resolve/main/trash_classifier.keras"
-
+ODEL_URL = "https://huggingface.co/2005-wajahat/gaarbage-classifier-v2/resolve/main/model.keras"
 model_file = tf.keras.utils.get_file("model.keras", MODEL_PATH)
 model = tf.keras.models.load_model(model_file)
 # =========================
