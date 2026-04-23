@@ -4,14 +4,19 @@ import numpy as np
 from PIL import Image
 
 # =========================
-# LOAD MODEL FROM HUGGING FACE
 # =========================
 import requests
-
-MODEL_URL = "https://huggingface.co/2005-wajahat/gaarbage-classifier-v2/resolve/main/model.keras"
-model_file = tf.keras.utils.get_file("model.keras", MODEL_PATH)
-model = tf.keras.models.load_model(model_file)
 # =========================
+# LOAD MODEL FROM HUGGING FACE
+# =========================
+@st.cache_resource
+def load_model():
+    MODEL_URL = "https://huggingface.co/2005-wajahat/gaarbage-classifier-v2/resolve/main/model.keras"
+    # get_file automatically downloads and caches the file so it only happens once
+    model_file = tf.keras.utils.get_file("garbage_model.keras", MODEL_URL)
+    return tf.keras.models.load_model(model_file)
+
+model = load_model()
 # CLASS NAMES
 # =========================
 class_names = [
