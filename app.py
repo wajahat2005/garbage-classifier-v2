@@ -12,8 +12,6 @@ MODEL_PATH = "https://huggingface.co/2005-wajahat/gaarbage-classifier-v2/resolve
 
 model_file = tf.keras.utils.get_file("model.keras", MODEL_PATH)
 model = tf.keras.models.load_model(model_file)
-model = tf.keras.models.load_model(MODEL_PATH)
-
 # =========================
 # CLASS NAMES
 # =========================
