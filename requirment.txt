@@ -1,6 +1,5 @@
-tensorflow
 streamlit
 numpy
 pillow
 requests
-huggingface_hub
+tensorflow-cpu
