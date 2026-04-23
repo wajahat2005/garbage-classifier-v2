@@ -24,7 +24,7 @@ class_names = [
     'organic', 'paper', 'plastic', 'textile', 'trash'
 ]
 
-IMG_SIZE = (300, 300)
+IMG_SIZE = (380, 380)
 
 # =========================
 # PREPROCESS FUNCTION
