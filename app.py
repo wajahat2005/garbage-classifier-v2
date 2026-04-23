@@ -1,11 +1,10 @@
 import streamlit as st
 import tensorflow as tf
 import numpy as np
+import pandas as pd
 from PIL import Image
-
-# =========================
-# =========================
 import requests
+
 # =========================
 # LOAD MODEL FROM HUGGING FACE
 # =========================
@@ -17,6 +16,8 @@ def load_model():
     return tf.keras.models.load_model(model_file)
 
 model = load_model()
+
+# =========================
 # CLASS NAMES
 # =========================
 class_names = [
@@ -54,7 +55,7 @@ elif uploaded_file is not None:
     image = Image.open(uploaded_file)
 
 # =========================
-# PREDICTION
+# PREDICTION & CONFIDENCE LOGIC
 # =========================
 if image is not None:
     st.image(image, caption="Input Image")
@@ -67,7 +68,24 @@ if image is not None:
     class_index = np.argmax(pred)
     confidence = np.max(pred)
 
-    st.success(f"Prediction: {class_names[class_index]}")
-    st.info(f"Confidence: {confidence:.2f}")
+    # Threshold System (Set to 60%)
+    CONFIDENCE_THRESHOLD = 0.60  
 
-    st.bar_chart(pred[0])
+    if confidence < CONFIDENCE_THRESHOLD:
+        st.warning("⚠️ Low Confidence Detected")
+        st.write(f"The model is only **{confidence*100:.1f}%** sure about this image.")
+        st.write("**Tips for a better result:**")
+        st.write("- Upload a clearer, less blurry image.")
+        st.write("- Make sure the item is well-lit.")
+        st.write("- Center the garbage item so it is the main focus.")
+    else:
+        st.success(f"♻️ Prediction: **{class_names[class_index].upper()}**")
+        st.info(f"Confidence: **{confidence*100:.1f}%**")
+
+    # Better Bar Chart (Shows Names instead of 0, 1, 2...)
+    chart_data = pd.DataFrame(
+        pred[0],
+        index=class_names,
+        columns=["Probability"]
+    )
+    st.bar_chart(chart_data)
