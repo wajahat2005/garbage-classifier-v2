@@ -1,54 +1,40 @@
-# =========================
-# IMPORTS
-# =========================
 import streamlit as st
-import numpy as np
 import tensorflow as tf
+import numpy as np
 from PIL import Image
-import requests
-from huggingface_hub import hf_hub_download
 
 # =========================
 # LOAD MODEL FROM HUGGING FACE
 # =========================
-
-MODEL_REPO = "2005-wajahat/gaarbage-classifier-v2"
-
-model_path = hf_hub_download(
-    repo_id=MODEL_REPO,
-    filename="trash_classifier.keras"   # change if name is different
-)
-
-model = tf.keras.models.load_model(model_path)
+MODEL_PATH = "https://huggingface.co/2005-wajahat/gaarbage-classifier-v2/resolve/main/trash_classifier.keras"
+model = tf.keras.models.load_model(MODEL_PATH)
 
 # =========================
-# CLASS NAMES (must match training order)
+# CLASS NAMES
 # =========================
 class_names = [
     'cardboard', 'e-waste', 'glass', 'metal',
     'organic', 'paper', 'plastic', 'textile', 'trash'
 ]
 
+IMG_SIZE = (300, 300)
+
 # =========================
-# IMAGE PREPROCESS
+# PREPROCESS FUNCTION
 # =========================
 def preprocess_image(image):
-    image = image.resize((300, 300))
+    image = image.convert("RGB")
+    image = image.resize(IMG_SIZE)
     img_array = np.array(image)
-
-    if img_array.shape[-1] == 4:
-        img_array = img_array[..., :3]
-
     img_array = tf.keras.applications.efficientnet.preprocess_input(img_array)
     img_array = np.expand_dims(img_array, axis=0)
-
     return img_array
 
 # =========================
 # UI
 # =========================
-st.title("♻️ Garbage Classifier AI")
-st.write("Upload image or use camera to classify waste type")
+st.title("♻️ Garbage Classifier")
+st.write("Upload an image OR use camera to classify waste.")
 
 uploaded_file = st.file_uploader("Upload Image", type=["jpg", "png", "jpeg"])
 camera_image = st.camera_input("Or take a picture")
@@ -68,7 +54,7 @@ if image is not None:
 
     img = preprocess_image(image)
 
-    with st.spinner("Predicting..."):
+    with st.spinner("Analyzing image..."):
         pred = model.predict(img)
 
     class_index = np.argmax(pred)
