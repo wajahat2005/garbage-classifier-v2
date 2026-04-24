@@ -57,30 +57,48 @@ elif uploaded_file is not None:
 # =========================
 # PREDICTION & CONFIDENCE LOGIC
 # =========================
+# =========================
+# PREDICTION (IMPROVED)
+# =========================
 if image is not None:
     st.image(image, caption="Input Image")
 
     img = preprocess_image(image)
 
     with st.spinner("Analyzing image..."):
-        pred = model.predict(img)
+        pred = model.predict(img)[0]
 
-    class_index = np.argmax(pred)
-    confidence = np.max(pred)
+    # Top predictions
+    top_indices = pred.argsort()[-3:][::-1]
+    top_classes = [class_names[i] for i in top_indices]
+    top_scores = [pred[i] for i in top_indices]
 
-    # Threshold System (Set to 60%)
-    CONFIDENCE_THRESHOLD = 0.60  
+    best_class = top_classes[0]
+    confidence = top_scores[0]
 
-    if confidence < CONFIDENCE_THRESHOLD:
-        st.warning("⚠️ Low Confidence Detected")
-        st.write(f"The model is only **{confidence*100:.1f}%** sure about this image.")
-        st.write("**Tips for a better result:**")
-        st.write("- Upload a clearer, less blurry image.")
-        st.write("- Make sure the item is well-lit.")
-        st.write("- Center the garbage item so it is the main focus.")
+    # Threshold system
+    CONFIDENCE_THRESHOLD = 0.65
+    GAP_THRESHOLD = 0.15  # difference between top1 and top2
+
+    if confidence < CONFIDENCE_THRESHOLD or (top_scores[0] - top_scores[1] < GAP_THRESHOLD):
+        st.error("❌ Unknown / Not Garbage")
+        st.write("This item does not clearly belong to known garbage categories.")
     else:
-        st.success(f"♻️ Prediction: **{class_names[class_index].upper()}**")
+        st.success(f"♻️ Prediction: **{best_class.upper()}**")
         st.info(f"Confidence: **{confidence*100:.1f}%**")
+
+    # Show top 3 predictions
+    st.subheader("Top Predictions")
+    for cls, score in zip(top_classes, top_scores):
+        st.write(f"{cls}: {score*100:.2f}%")
+
+    # Chart
+    chart_data = pd.DataFrame(
+        pred,
+        index=class_names,
+        columns=["Probability"]
+    )
+    st.bar_chart(chart_data)
 
     # Better Bar Chart (Shows Names instead of 0, 1, 2...)
     chart_data = pd.DataFrame(
